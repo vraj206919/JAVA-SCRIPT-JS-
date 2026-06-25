@@ -1,5 +1,7 @@
 // In JavaScript, a Promise is an object that represents the eventual result of an asynchronous operation.
 
+// In promise code will Types Verticle Automatically
+
 let myPromise = new Promise((resolve, reject) => {
   let completed = true;
 
