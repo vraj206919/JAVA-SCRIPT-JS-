@@ -1,37 +1,55 @@
-let products=[];
+let products = JSON.parse(localStorage.getItem("products")) || [];
 
-let cart=JSON.parse(localStorage.getItem("cart")) || [];
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
+loadProducts();
 
+function loadProducts() {
+  if (products.length > 0) {
+    displayProducts(products);
 
-fetch("https://fakestoreapi.com/products")
+    displayCart();
 
-.then(res=>res.json())
+    return;
+  }
 
-.then(data=>{
+  fetch("https://fakestoreapi.com/products")
+    .then((res) => res.json())
 
-products=data;
+    .then((data) => {
+      products = data.map((product) => ({
+        id: product.id,
 
-displayProducts(products);
+        title: product.title,
 
-displayCart();
+        price: product.price,
 
-});
+        image: product.image,
+      }));
 
+      saveProducts();
 
+      displayProducts(products);
 
+      displayCart();
+    });
+}
 
+function saveProducts() {
+  localStorage.setItem("products", JSON.stringify(products));
+}
 
-function displayProducts(data){
+function saveCart() {
+  localStorage.setItem("cart", JSON.stringify(cart));
 
+  displayCart();
+}
 
-let html="";
+function displayProducts(data) {
+  let html = "";
 
-
-data.forEach(product=>{
-
-
-html+=`
+  data.forEach((product) => {
+    html += `
 
 <div class="col-md-3 mb-4">
 
@@ -40,10 +58,12 @@ html+=`
 
 
 <img src="${product.image}"
-class="card-img-top">
+class="product-img">
+
 
 
 <div class="card-body text-center">
+
 
 
 <h5 class="card-title">
@@ -53,6 +73,7 @@ ${product.title}
 </h5>
 
 
+
 <p class="price">
 
 ₹ ${product.price}
@@ -60,7 +81,9 @@ ${product.title}
 </p>
 
 
-<button class="btn cart-btn w-100"
+
+<button class="btn cart-btn w-100 mb-2"
+
 onclick="addToCart(${product.id})">
 
 Add To Cart
@@ -68,6 +91,27 @@ Add To Cart
 </button>
 
 
+
+<button class="btn edit-btn w-100 mb-2"
+
+onclick="editProduct(${product.id})">
+
+Edit
+
+</button>
+
+
+
+<button class="btn delete-btn w-100"
+
+onclick="deleteProduct(${product.id})">
+
+Delete
+
+</button>
+
+
+
 </div>
 
 
@@ -75,173 +119,179 @@ Add To Cart
 
 
 </div>
-
 
 `;
+  });
 
-});
-
-
-document.getElementById("productArea").innerHTML=html;
-
-
+  document.getElementById("productArea").innerHTML = html;
 }
 
+function searchProducts() {
+  let value = document.getElementById("searchBox").value.toLowerCase();
 
+  let result = products.filter((product) =>
+    product.title.toLowerCase().includes(value),
+  );
 
-
-
-
-
-function searchProducts(){
-
-
-let text=document
-.getElementById("searchBox")
-.value
-.toLowerCase();
-
-
-
-let result=products.filter(product=>
-
-product.title.toLowerCase().includes(text)
-
-);
-
-
-
-displayProducts(result);
-
-
+  displayProducts(result);
 }
 
+function saveProduct() {
+  let id = document.getElementById("productId").value;
 
+  let title = document.getElementById("title").value;
 
+  let price = document.getElementById("price").value;
 
+  let image = document.getElementById("image").value;
 
+  if (id) {
+    let product = products.find((p) => p.id == id);
 
+    product.title = title;
 
+    product.price = Number(price);
 
-function addToCart(id){
+    product.image = image;
+  } else {
+    let newId = 1;
 
+    if (products.length > 0) {
+      newId = Math.max(...products.map((p) => p.id)) + 1;
+    }
 
-let product=products.find(p=>p.id==id);
+    products.push({
+      id: newId,
 
+      title: title,
 
+      price: Number(price),
 
-let item=cart.find(p=>p.id==id);
+      image: image,
+    });
+  }
 
+  saveProducts();
 
+  displayProducts(products);
 
-if(item){
+  document.getElementById("productId").value = "";
 
-item.quantity++;
+  document.getElementById("title").value = "";
 
+  document.getElementById("price").value = "";
+
+  document.getElementById("image").value = "";
 }
 
-else{
+function editProduct(id) {
+  let product = products.find((p) => p.id == id);
 
+  document.getElementById("productId").value = product.id;
 
-cart.push({
+  document.getElementById("title").value = product.title;
 
-id:product.id,
+  document.getElementById("price").value = product.price;
 
-title:product.title,
+  document.getElementById("image").value = product.image;
 
-image:product.image,
+  let modal = new bootstrap.Modal(document.getElementById("productModal"));
 
-price:product.price,
-
-quantity:1
-
-});
-
-
+  modal.show();
 }
 
+function deleteProduct(id) {
+  products = products.filter((p) => p.id != id);
 
-saveCart();
+  cart = cart.filter((p) => p.id != id);
 
+  saveProducts();
 
+  saveCart();
+
+  displayProducts(products);
 }
 
+function addToCart(id) {
+  let product = products.find((p) => p.id == id);
 
+  let item = cart.find((p) => p.id == id);
 
+  if (item) {
+    item.quantity++;
+  } else {
+    cart.push({
+      id: product.id,
 
+      image: product.image,
 
+      title: product.title,
 
+      price: product.price,
 
+      quantity: 1,
+    });
+  }
 
-function displayCart(){
-
-
-let html="";
-
-let count=0;
-
-
-
-if(cart.length==0){
-
-
-html=`
-
-<p class="text-center text-muted">
-
-Cart Empty
-
-</p>
-
-`;
-
+  saveCart();
 }
 
+function displayCart() {
+  let html = "";
+
+  let total = 0;
+
+  let count = 0;
+
+  cart.forEach((item) => {
+    let itemTotal = item.price * item.quantity;
+
+    total += itemTotal;
+
+    count += item.quantity;
+
+    html += `
+
+<tr>
 
 
-cart.forEach(item=>{
+<td>
+
+${item.id}
+
+</td>
 
 
-count+=item.quantity;
+
+<td>
+
+<img src="${item.image}">
+
+</td>
 
 
-html+=`
 
-<div class="card cart-card mb-3 shadow-sm">
-
-
-<div class="card-body">
-
-
-<div class="d-flex align-items-center">
-
-
-<img src="${item.image}"
-class="cart-img me-3">
-
-
-<div>
-
-
-<h6>
+<td>
 
 ${item.title}
 
-</h6>
+</td>
 
 
-<p class="text-success fw-bold">
+
+<td>
 
 ₹ ${item.price}
 
-</p>
+</td>
 
 
 
-<div class="d-flex align-items-center gap-2">
+
+<td>
 
 
-<button class="btn btn-danger btn-sm"
+<button class="btn btn-danger btn-sm qty-btn"
 
 onclick="changeQty(${item.id},-1)">
 
@@ -251,15 +301,11 @@ onclick="changeQty(${item.id},-1)">
 
 
 
-<span class="fw-bold">
-
 ${item.quantity}
 
-</span>
 
 
-
-<button class="btn btn-success btn-sm"
+<button class="btn btn-success btn-sm qty-btn"
 
 onclick="changeQty(${item.id},1)">
 
@@ -269,10 +315,24 @@ onclick="changeQty(${item.id},1)">
 
 
 
-</div>
+</td>
 
 
-<button class="btn btn-outline-danger btn-sm mt-2"
+
+
+<td>
+
+₹ ${itemTotal}
+
+</td>
+
+
+
+
+<td>
+
+
+<button class="btn btn-danger btn-sm"
 
 onclick="removeItem(${item.id})">
 
@@ -281,97 +341,52 @@ Remove
 </button>
 
 
-</div>
+</td>
 
 
-</div>
 
-
-</div>
-
-
-</div>
-
+</tr>
 
 `;
+  });
 
+  if (cart.length == 0) {
+    html = `
 
-});
+<tr>
 
+<td colspan="7">
 
+Cart Empty
 
-document.getElementById("cartArea").innerHTML=html;
+</td>
 
+</tr>
 
-document.getElementById("cartCount").innerHTML=count;
+`;
+  }
 
+  document.getElementById("cartArea").innerHTML = html;
 
+  document.getElementById("cartCount").innerHTML = count;
+
+  document.getElementById("grandTotal").innerHTML = total;
 }
 
+function changeQty(id, value) {
+  let item = cart.find((p) => p.id == id);
 
+  item.quantity += value;
 
+  if (item.quantity <= 0) {
+    cart = cart.filter((p) => p.id != id);
+  }
 
-
-
-
-
-function changeQty(id,value){
-
-
-let item=cart.find(p=>p.id==id);
-
-
-item.quantity+=value;
-
-
-
-if(item.quantity<=0){
-
-
-cart=cart.filter(p=>p.id!=id);
-
-
+  saveCart();
 }
 
+function removeItem(id) {
+  cart = cart.filter((p) => p.id != id);
 
-
-saveCart();
-
-
-}
-
-
-
-
-
-
-
-
-function removeItem(id){
-
-
-cart=cart.filter(p=>p.id!=id);
-
-
-saveCart();
-
-
-}
-
-
-
-
-
-
-
-
-function saveCart(){
-
-
-localStorage.setItem("cart",JSON.stringify(cart));
-
-
-displayCart();
-
-
+  saveCart();
 }
