@@ -1,0 +1,26 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#img{
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+    width: 450px;
+}
+
+body{
+   background-color: gray;    
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}
+
+.container{
+     position: relative;
+     width: 900px;
+     max-width: 95%;
+}
+
