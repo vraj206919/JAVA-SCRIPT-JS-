@@ -1,392 +1,131 @@
-let products = JSON.parse(localStorage.getItem("products")) || [];
+const quizData = [
+  {
+    id: 1,
+    question: "Which method adds an element to the end of an array?",
+    options: ["push()", "pop()", "shift()", "unshift()"],
+    correctAnswer: "push()",
+  },
+  {
+    id: 2,
+    question: "Which method removes the last element from an array?",
+    options: ["push()", "pop()", "shift()", "slice()"],
+    correctAnswer: "pop()",
+  },
+  {
+    id: 3,
+    question: "Which method creates a new array by changing each element?",
+    options: ["filter()", "map()", "find()", "forEach()"],
+    correctAnswer: "map()",
+  },
+  {
+    id: 4,
+    question: "Which method returns only elements that match a condition?",
+    options: ["map()", "reduce()", "filter()", "findIndex()"],
+    correctAnswer: "filter()",
+  },
+  {
+    id: 5,
+    question: "Which method returns the first matching element?",
+    options: ["find()", "filter()", "map()", "some()"],
+    correctAnswer: "find()",
+  },
+  {
+    id: 6,
+    question: "Which method is used to calculate a single value from an array?",
+    options: ["map()", "reduce()", "forEach()", "find()"],
+    correctAnswer: "reduce()",
+  },
+  {
+    id: 7,
+    question: "How do you access the name property of this object?",
+    options: ["user.name", "user->name", "user[name]", "user::name"],
+    correctAnswer: "user.name",
+  },
+  {
+    id: 8,
+    question: "Which method loops through every array element?",
+    options: ["forEach()", "find()", "reduce()", "sort()"],
+    correctAnswer: "forEach()",
+  },
+  {
+    id: 9,
+    question: "Which method finds the index of an element?",
+    options: ["find()", "findIndex()", "index()", "search()"],
+    correctAnswer: "findIndex()",
+  },
+  {
+    id: 10,
+    question: "Which keyword is used to create an object?",
+    options: ["object", "new", "create", "make"],
+    correctAnswer: "new",
+  },
+];
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+const questionText = document.getElementById("questionText");
+const questionCount = document.getElementById("questionCount");
+const optionContainer = document.getElementById("optionContainer");
+const result = document.getElementById("result");
 
-loadProducts();
+let currentQuestionIndex = 0;
+let selectedAnswer = "";
+let totalScore = 0;
 
-function loadProducts() {
-  if (products.length > 0) {
-    displayProducts(products);
+showQuestion();
 
-    displayCart();
+function showQuestion() {
+  optionContainer.innerHTML = "";
 
-    return;
-  }
+  questionCount.innerText = `Question ${currentQuestionIndex + 1}/${quizData.length}`;
 
-  fetch("https://fakestoreapi.com/products")
-    .then((res) => res.json())
+  questionText.innerText = quizData[currentQuestionIndex].question;
 
-    .then((data) => {
-      products = data.map((product) => ({
-        id: product.id,
+  quizData[currentQuestionIndex].options.forEach(function (optionText) {
+    let column = document.createElement("div");
+    column.classList.add("col-md-6");
 
-        title: product.title,
+    let button = document.createElement("button");
 
-        price: product.price,
+    button.innerText = optionText;
 
-        image: product.image,
-      }));
+    // BLUE COLOR
+    button.classList.add("btn", "btn-outline-primary", "option-btn");
 
-      saveProducts();
+    button.onclick = function () {
+      selectedAnswer = optionText;
 
-      displayProducts(products);
+      nextQuestion();
+    };
 
-      displayCart();
-    });
-}
+    column.appendChild(button);
 
-function saveProducts() {
-  localStorage.setItem("products", JSON.stringify(products));
-}
-
-function saveCart() {
-  localStorage.setItem("cart", JSON.stringify(cart));
-
-  displayCart();
-}
-
-function displayProducts(data) {
-  let html = "";
-
-  data.forEach((product) => {
-    html += `
-
-<div class="col-md-3 mb-4">
-
-
-<div class="card h-100">
-
-
-<img src="${product.image}"
-class="product-img">
-
-
-
-<div class="card-body text-center">
-
-
-
-<h5 class="card-title">
-
-${product.title}
-
-</h5>
-
-
-
-<p class="price">
-
-₹ ${product.price}
-
-</p>
-
-
-
-<button class="btn cart-btn w-100 mb-2"
-
-onclick="addToCart(${product.id})">
-
-Add To Cart
-
-</button>
-
-
-
-<button class="btn edit-btn w-100 mb-2"
-
-onclick="editProduct(${product.id})">
-
-Edit
-
-</button>
-
-
-
-<button class="btn delete-btn w-100"
-
-onclick="deleteProduct(${product.id})">
-
-Delete
-
-</button>
-
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
-`;
+    optionContainer.appendChild(column);
   });
-
-  document.getElementById("productArea").innerHTML = html;
 }
 
-function searchProducts() {
-  let value = document.getElementById("searchBox").value.toLowerCase();
+function nextQuestion() {
+  if (selectedAnswer === quizData[currentQuestionIndex].correctAnswer) {
+    totalScore++;
+  }
 
-  let result = products.filter((product) =>
-    product.title.toLowerCase().includes(value),
-  );
+  if (currentQuestionIndex < quizData.length - 1) {
+    currentQuestionIndex++;
 
-  displayProducts(result);
-}
+    selectedAnswer = "";
 
-function saveProduct() {
-  let id = document.getElementById("productId").value;
-
-  let title = document.getElementById("title").value;
-
-  let price = document.getElementById("price").value;
-
-  let image = document.getElementById("image").value;
-
-  if (id) {
-    let product = products.find((p) => p.id == id);
-
-    product.title = title;
-
-    product.price = Number(price);
-
-    product.image = image;
+    showQuestion();
   } else {
-    let newId = 1;
-
-    if (products.length > 0) {
-      newId = Math.max(...products.map((p) => p.id)) + 1;
-    }
-
-    products.push({
-      id: newId,
-
-      title: title,
-
-      price: Number(price),
-
-      image: image,
-    });
+    showResult();
   }
-
-  saveProducts();
-
-  displayProducts(products);
-
-  document.getElementById("productId").value = "";
-
-  document.getElementById("title").value = "";
-
-  document.getElementById("price").value = "";
-
-  document.getElementById("image").value = "";
 }
 
-function editProduct(id) {
-  let product = products.find((p) => p.id == id);
-
-  document.getElementById("productId").value = product.id;
-
-  document.getElementById("title").value = product.title;
-
-  document.getElementById("price").value = product.price;
-
-  document.getElementById("image").value = product.image;
-
-  let modal = new bootstrap.Modal(document.getElementById("productModal"));
-
-  modal.show();
-}
-
-function deleteProduct(id) {
-  products = products.filter((p) => p.id != id);
-
-  cart = cart.filter((p) => p.id != id);
-
-  saveProducts();
-
-  saveCart();
-
-  displayProducts(products);
-}
-
-function addToCart(id) {
-  let product = products.find((p) => p.id == id);
-
-  let item = cart.find((p) => p.id == id);
-
-  if (item) {
-    item.quantity++;
-  } else {
-    cart.push({
-      id: product.id,
-
-      image: product.image,
-
-      title: product.title,
-
-      price: product.price,
-
-      quantity: 1,
-    });
-  }
-
-  saveCart();
-}
-
-function displayCart() {
-  let html = "";
-
-  let total = 0;
-
-  let count = 0;
-
-  cart.forEach((item) => {
-    let itemTotal = item.price * item.quantity;
-
-    total += itemTotal;
-
-    count += item.quantity;
-
-    html += `
-
-<tr>
-
-
-<td>
-
-${item.id}
-
-</td>
-
-
-
-<td>
-
-<img src="${item.image}">
-
-</td>
-
-
-
-<td>
-
-${item.title}
-
-</td>
-
-
-
-<td>
-
-₹ ${item.price}
-
-</td>
-
-
-
-
-<td>
-
-
-<button class="btn btn-danger btn-sm qty-btn"
-
-onclick="changeQty(${item.id},-1)">
-
--
-
-</button>
-
-
-
-${item.quantity}
-
-
-
-<button class="btn btn-success btn-sm qty-btn"
-
-onclick="changeQty(${item.id},1)">
-
-+
-
-</button>
-
-
-
-</td>
-
-
-
-
-<td>
-
-₹ ${itemTotal}
-
-</td>
-
-
-
-
-<td>
-
-
-<button class="btn btn-danger btn-sm"
-
-onclick="removeItem(${item.id})">
-
-Remove
-
-</button>
-
-
-</td>
-
-
-
-</tr>
-
-`;
-  });
-
-  if (cart.length == 0) {
-    html = `
-
-<tr>
-
-<td colspan="7">
-
-Cart Empty
-
-</td>
-
-</tr>
-
-`;
-  }
-
-  document.getElementById("cartArea").innerHTML = html;
-
-  document.getElementById("cartCount").innerHTML = count;
-
-  document.getElementById("grandTotal").innerHTML = total;
-}
-
-function changeQty(id, value) {
-  let item = cart.find((p) => p.id == id);
-
-  item.quantity += value;
-
-  if (item.quantity <= 0) {
-    cart = cart.filter((p) => p.id != id);
-  }
-
-  saveCart();
-}
-
-function removeItem(id) {
-  cart = cart.filter((p) => p.id != id);
-
-  saveCart();
+function showResult() {
+  questionText.innerHTML = "Finally Your MCQ is Completed ";
+
+  optionContainer.innerHTML = "";
+
+  result.innerHTML = `
+    <h3 class="text-center text-success">
+       Total Score : ${totalScore}/${quizData.length}
+    </h3>
+  `;
 }
