@@ -1,63 +1,154 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Quiz</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-          rel="stylesheet"
-          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-          crossorigin="anonymous">
+    <title>Bombay Market</title>
 
-    <link rel="stylesheet" href="style.css">
-</head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
 
-<body>
+    <link rel="stylesheet" href="style.css" />
 
-    <div class="container d-flex justify-content-center align-items-center min-vh-100">
-        <div class="row">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+  </head>
 
-            <div class="card shadow quiz-card gap-2 rounded-3">
+  <body>
+    <nav class="navbar navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand fs-2 fw-bold"> Bombay Market </a>
 
-                <h2 class="text-center pt-2 text-success">
-                    Quiz Application
-                </h2>
+        <div class="d-flex">
+          <input
+            id="searchBox"
+            class="form-control me-2"
+            placeholder="Search Product"
+            onkeyup="searchProducts()"
+          />
 
-                <div class="d-flex justify-content-between fs-4">
+          <button
+            class="btn btn-success me-2"
+            data-bs-toggle="modal"
+            data-bs-target="#productModal"
+          >
+            <i class="bi bi-plus-circle"></i>
 
-                    <p id="questionCounter" class="text-primary">
-                        Question 1/10
-                    </p>
+            Add Product
+          </button>
 
-                    <p id="timerDisplay" class="text-danger">
-                        Time 30s
-                    </p>
+          <button
+            class="btn btn-warning position-relative"
+            data-bs-toggle="modal"
+            data-bs-target="#cartModal"
+          >
+            <i class="bi bi-cart3 fs-4"></i>
 
-                </div>
-
-                <p class="fs-3 text-center" id="quizQuestion">
-                    Quiz Questions
-                </p>
-
-                <div id="optionsContainer" class="row">
-
-                </div>
-
-                <button class="btn btn-outline-primary">
-                    Next
-                </button>
-
-            </div>
-
+            <span
+              id="cartCount"
+              class="badge bg-danger position-absolute top-0 start-100 translate-middle"
+            >
+              0
+            </span>
+          </button>
         </div>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <h2 class="text-center mb-4">Our Products</h2>
+
+      <div class="row" id="productArea"></div>
     </div>
 
-    <script src="./script.js"></script>
+    <div class="modal fade" id="productModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5>Add / Edit Product</h5>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-            crossorigin="anonymous"></script>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
 
-</body>
+          <div class="modal-body">
+            <input type="hidden" id="productId" />
+
+            <input
+              type="text"
+              id="title"
+              class="form-control mb-3"
+              placeholder="Product Name"
+            />
+
+            <input
+              type="number"
+              id="price"
+              class="form-control mb-3"
+              placeholder="Price"
+            />
+
+            <input
+              type="text"
+              id="image"
+              class="form-control mb-3"
+              placeholder="Image URL"
+            />
+
+            <button class="btn btn-primary w-100" onclick="saveProduct()">
+              Save Product
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="cartModal">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5>🛒 My Cart</h5>
+
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <table class="table table-bordered text-center">
+              <thead class="table-dark">
+                <tr>
+                  <th>ID</th>
+
+                  <th>Image</th>
+
+                  <th>Name</th>
+
+                  <th>Price</th>
+
+                  <th>Quantity</th>
+
+                  <th>Total</th>
+
+                  <th>Action</th>
+                </tr>
+              </thead>
+
+              <tbody id="cartArea"></tbody>
+            </table>
+
+            <h4 class="text-end">
+              Grand Total : ₹ <span id="grandTotal">0</span>
+            </h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
