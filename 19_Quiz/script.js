@@ -65,10 +65,15 @@ const questionText = document.getElementById("questionText");
 const questionCount = document.getElementById("questionCount");
 const optionContainer = document.getElementById("optionContainer");
 const result = document.getElementById("result");
+const timer = document.getElementById("timer");
 
 let currentQuestionIndex = 0;
 let selectedAnswer = "";
 let totalScore = 0;
+let answers = [];
+
+let timeLeft = 30;
+let timerInterval;
 
 showQuestion();
 
@@ -79,39 +84,63 @@ function showQuestion() {
 
   questionText.innerText = quizData[currentQuestionIndex].question;
 
-  quizData[currentQuestionIndex].options.forEach(function (optionText) {
+  quizData[currentQuestionIndex].options.forEach((optionText) => {
     let column = document.createElement("div");
     column.classList.add("col-md-6");
 
     let button = document.createElement("button");
-
     button.innerText = optionText;
-
-    // BLUE COLOR
     button.classList.add("btn", "btn-outline-primary", "option-btn");
 
     button.onclick = function () {
       selectedAnswer = optionText;
-
       nextQuestion();
     };
 
     column.appendChild(button);
-
     optionContainer.appendChild(column);
   });
+
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+
+  timeLeft = 30;
+  timer.innerText = `Time ${timeLeft}s`;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+
+    timer.innerText = `Time ${timeLeft}s`;
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+
+      selectedAnswer = "";
+
+      nextQuestion();
+    }
+  }, 1000);
 }
 
 function nextQuestion() {
+  clearInterval(timerInterval);
+
+  answers.push({
+    question: quizData[currentQuestionIndex].question,
+    yourAnswer: selectedAnswer || "Not Answered",
+    correctAnswer: quizData[currentQuestionIndex].correctAnswer,
+  });
+
   if (selectedAnswer === quizData[currentQuestionIndex].correctAnswer) {
     totalScore++;
   }
 
   if (currentQuestionIndex < quizData.length - 1) {
     currentQuestionIndex++;
-
     selectedAnswer = "";
-
     showQuestion();
   } else {
     showResult();
@@ -119,13 +148,32 @@ function nextQuestion() {
 }
 
 function showResult() {
-  questionText.innerHTML = "Finally Your MCQ is Completed ";
+  clearInterval(timerInterval);
 
+  questionCount.innerHTML = "";
+  timer.innerHTML = "";
+  questionText.innerHTML = "<h2 class='text-success'>Quiz Completed</h2>";
   optionContainer.innerHTML = "";
 
-  result.innerHTML = `
-    <h3 class="text-center text-success">
-       Total Score : ${totalScore}/${quizData.length}
+  let html = `
+    <h3 class="text-center text-success mb-4">
+      Total Score : ${totalScore}/${quizData.length}
     </h3>
   `;
+
+  answers.forEach((item, index) => {
+    html += `
+      <div class="border rounded p-3 mb-3">
+        <h5>Question ${index + 1}</h5>
+
+        <p><strong>Question :</strong> ${item.question}</p>
+
+        <p><strong>Your Answer :</strong> ${item.yourAnswer}</p>
+
+        <p><strong>Correct Answer :</strong> ${item.correctAnswer}</p>
+      </div>
+    `;
+  });
+
+  result.innerHTML = html;
 }
